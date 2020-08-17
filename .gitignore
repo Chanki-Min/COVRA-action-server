@@ -1,1 +1,3 @@
+python/data/*
+python/processed_data/*
 /node_modules
