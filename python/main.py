@@ -14,13 +14,52 @@ import os
 # 환경변수 받아서 적용
 # 문자열로 받기 때문에 공백문자에 주의 필요
 load_dotenv(verbose = True) # .env 없으면 에러 던짐
-PATH_METADATA = os.environ.get("PATH_METADATA") # 메타데이터 위치
-PATH_PROCESSED_DATA = os.environ.get("PATH_PROCESSED_DATA") # 전처리 끝난 데이터 위치
+
+LIST_ORIGIN = os.environ.get("LIST_ORIGIN").split(",") # 출처 리스트
+
+PATH_METADATA_GISAID = os.environ.get("PATH_METADATA_GISAID") # GISAID 메타데이터
+PATH_METADATA_WHO = os.environ.get("PATH_METADATA_WHO") # WHO 메타데이터
+
+PATH_PROCESSED_DATA_GISAID = os.environ.get("PATH_PROCESSED_DATA_GISAID") # 전처리 후 GISAID 데이터
+PATH_PROCESSED_DATA_WHO = os.environ.get("PATH_PROCESSED_DATA_WHO") # 전처리 후 WHO 데이터
+
+ORIGIN = "" # 출처
+PATH_METADATA = ""
+PATH_PROCESSED_DATA = ""
 
 # 파일 형식 
 # input output 이 동일한 형태임
 FILE_EXT = ".txt"
 INDENT_SPACE = 2
+
+
+def set_data_orgin (data_origin) :
+
+    '''
+    전역변수 PATH_METADATA, PATH_PROCESSED_DATA 를 업데이트하는 function
+
+    parameter : string
+
+    return : None
+    '''
+
+    global ORIGIN
+    global PATH_METADATA
+    global PATH_PROCESSED_DATA
+
+    ORIGIN = data_origin
+    if ORIGIN == "GISAID" :
+
+        PATH_METADATA = PATH_METADATA_GISAID
+        PATH_PROCESSED_DATA = PATH_PROCESSED_DATA_GISAID
+
+    elif ORIGIN == "WHO" :
+
+        PATH_METADATA = PATH_METADATA_WHO
+        PATH_PROCESSED_DATA = PATH_PROCESSED_DATA_WHO
+
+    else :
+        raise Exception("Error : Data origin is undefined.")
 
 
 def is_file_exist () :
@@ -44,7 +83,7 @@ def is_file_exist () :
     if count is 1 :
         return True
     elif count is 0 :
-        raise Exception("Error : There is no file.")
+        raise Exception("Error : There is no file. in {}" .format(file_path))
     else :
         raise Exception("Error : Too many file exist.")
 
@@ -111,7 +150,7 @@ def preprocess_data (data) :
     return : list of dictionary
     '''
     
-    processed_data = Preprocess(data)
+    processed_data = Preprocess(data, origin = ORIGIN)
 
     return processed_data
 
@@ -125,6 +164,7 @@ def write_file (data) :
 
     return : None
     '''
+
     indent_space = INDENT_SPACE
 
     # file 이름을 임시로 지정하기 위해 datetime 을 쓴다.
@@ -149,12 +189,27 @@ def write_file (data) :
     raise Exception("Error : File write fail.")
 
 
-if __name__ == "__main__" :
-    try :
+def main () :
+    
+    '''
+    main
+
+    parameter : None
+
+    return : None
+    '''
+
+    for origin in LIST_ORIGIN :
+
+        set_data_orgin(origin)
         data = read_file()
         processed_data = preprocess_data(data)
         write_file(processed_data)
-        
+
+
+if __name__ == "__main__" :
+    try :
+        main()        
         print("0")
     except Exception as e :
         print("1", e)

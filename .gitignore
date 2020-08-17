@@ -1,5 +1,6 @@
-python/data/*
-python/processed_data/*
+python/data/gisaid/*
+python/data/who/*
+python/processed_data/gisaid/*
+python/processed_data/who/*
 python/__pycache__
-
 /node_modules
