@@ -20,6 +20,7 @@ PATH_PROCESSED_DATA = os.environ.get("PATH_PROCESSED_DATA") # 전처리 끝난 �
 # 파일 형식 
 # input output 이 동일한 형태임
 FILE_EXT = ".txt"
+INDENT_SPACE = 2
 
 
 def is_file_exist () :
@@ -129,6 +130,7 @@ def write_file (data) :
 
     return : None
     '''
+    indent_space = INDENT_SPACE
 
     # file 이름을 임시로 지정하기 위해 datetime 을 쓴다.
     current_time = datetime.today().strftime("%Y-%m-%d-%H-%M-%S")
@@ -143,7 +145,7 @@ def write_file (data) :
 
         try : 
             with open(path_tmp, "w", encoding = "utf-8") as f :
-                json.dump(data, f, indent = 2)
+                json.dump(data, f, indent = indent_space)
 
             return
         except : 
