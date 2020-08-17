@@ -7,7 +7,49 @@ import os
 # 환경변수 받아서 적용
 # 문자열로 받기 때문에 공백문자에 주의 필요
 load_dotenv(verbose = True) # .env 없으면 에러 던짐
-LIST_DROPPED_COLUMNS = os.environ.get("LIST_DROPPED_COLUMNS").split(",")
+LIST_DROPPED_COLUMNS_GISAID = os.environ.get("LIST_DROPPED_COLUMNS_GISAID").split(",")
+LIST_DROPPED_COLUMNS_WHO = os.environ.get("LIST_DROPPED_COLUMNS_WHO").split(",")
+
+ORIGIN = "" # 출처
+LIST_DROPPED_COLUMNS = ""
+
+
+def set_origin(data_origin) :
+    
+    '''
+    데이터 출처를 전역변수로 선언
+
+    parameter : string
+
+    return : None
+    '''
+
+    global ORIGIN
+    ORIGIN = data_origin
+
+
+def set_list_dropped_columns () :
+
+    '''
+    LIST_DROPPED_COLUMNS 를 출처에 따라서 할당
+
+    parameter : None
+
+    return : None
+    '''
+
+    global LIST_DROPPED_COLUMNS
+    if ORIGIN == "GISAID" :
+
+        LIST_DROPPED_COLUMNS = LIST_DROPPED_COLUMNS_GISAID
+
+    elif ORIGIN == "WHO" :
+
+        LIST_DROPPED_COLUMNS = LIST_DROPPED_COLUMNS_WHO
+
+    else :
+        raise Exception("Error : Data origin is undefined.")
+
 
 
 def drop_columns (data) :
@@ -22,6 +64,7 @@ def drop_columns (data) :
 
     if type(data) is pd.DataFrame :
 
+        set_list_dropped_columns()
         list_dropped_columns = LIST_DROPPED_COLUMNS
         dropped_data = data.drop(list_dropped_columns, axis = 1)
 
@@ -57,13 +100,14 @@ def parse_json_form (data) :
 
     return : list of dictionary
     '''
+
     parsed_data = json.loads(data)
 
     return parsed_data
 
 
 # main preprocess
-def Preprocess (data) : 
+def Preprocess (data, origin) : 
 
     '''
     main preprocess code
@@ -72,10 +116,18 @@ def Preprocess (data) :
 
     return : list of dictionary
     '''
+
+    set_origin(origin)
+
+    dropped_data = drop_columns(data)
+    json_string_data = stringify_with_record_form(dropped_data)
+    parsed_data = parse_json_form(json_string_data)
+
     try : 
         
-        dropped_data = drop_columns(data)
+        set_origin(origin)
 
+        dropped_data = drop_columns(data)
         json_string_data = stringify_with_record_form(dropped_data)
         parsed_data = parse_json_form(json_string_data)
 
