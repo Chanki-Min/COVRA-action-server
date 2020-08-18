@@ -23,15 +23,16 @@ def drop_columns (data) :
     if type(data) is pd.DataFrame :
 
         list_dropped_columns = LIST_DROPPED_COLUMNS
-        dropped_data = data.drop(list_drooped_columns, axis = 1)
+        dropped_data = data.drop(list_dropped_columns, axis = 1)
 
         return dropped_data
 
     else : 
-        raise Exception("Error : ")
+
+        raise Exception("Error : Need data type as pandas.DataFrame")
 
 
-def strigify_with_record_form (data) :
+def stringify_with_record_form (data) :
     
     '''
     DataFrame 을 json 형식처럼 보이는 string data 로 변환한다.
@@ -40,7 +41,11 @@ def strigify_with_record_form (data) :
 
     return : string
     '''
-    pass
+    
+    # orient  = "records" 부분은 일반 Dictionary 나열 string 에서 list 요소를 wrapping 해준다.
+    json_string_data = data.to_json(orient = "records") 
+
+    return json_string_data
 
 
 def parse_json_form (data) :
@@ -52,12 +57,35 @@ def parse_json_form (data) :
 
     return : list of dictionary
     '''
-    return json.loads(data)
+    parsed_data = json.loads(data)
+
+    return parsed_data
+
+
+# main preprocess
+def Preprocess (data) : 
+
+    '''
+    main preprocess code
+
+    parameter : pandas.DataFrame
+
+    return : list of dictionary
+    '''
+    try : 
+        
+        dropped_data = drop_columns(data)
+
+        json_string_data = stringify_with_record_form(dropped_data)
+        parsed_data = parse_json_form(json_string_data)
+
+        return parsed_data
+
+    except : 
+        raise Exception("Error : Preprocess failed.")
 
 
 # main function
 if __name__ == "__main__" :
-    try : 
-        pass
-    except Exception as e :
-        print("Error : preprocess test fail.", e)
+
+    print("Error : Preprocess test is only module.")

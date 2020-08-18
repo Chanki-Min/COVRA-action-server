@@ -4,6 +4,7 @@ from datetime import datetime # 파일이름을 지정하기 위함
 # 노션에 상대경로 저장되는거 적어주기
 
 # 전처리 및 data 관리
+from preprocess import Preprocess
 import pandas as pd
 import numpy as np
 
@@ -14,7 +15,6 @@ import os
 # 문자열로 받기 때문에 공백문자에 주의 필요
 load_dotenv(verbose = True) # .env 없으면 에러 던짐
 PATH_METADATA = os.environ.get("PATH_METADATA") # 메타데이터 위치
-LIST_DROPPED_COLUMNS = os.environ.get("LIST_DROPPED_COLUMNS").split(",") # drop 해야할 리스트를 string type 으로
 PATH_PROCESSED_DATA = os.environ.get("PATH_PROCESSED_DATA") # 전처리 끝난 데이터 위치
 
 # 파일 형식 
@@ -111,12 +111,7 @@ def preprocess_data (data) :
     return : list of dictionary
     '''
     
-    # preprocess.py 에서 가져와서 전처리 할 것
-    dropped_data = data.drop(LIST_DROPPED_COLUMNS, axis = 1) # drop
-    string_json_data = dropped_data.to_json(orient = "records") # list 형식으로 만들기 위해서 
-    json_data = json.loads(string_json_data) # json parsing
-
-    processed_data = json_data
+    processed_data = Preprocess(data)
 
     return processed_data
 
