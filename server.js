@@ -6,7 +6,7 @@ require('dotenv').config();
 const router = require('./route.js');
 
 //request의 body를 json으로 받아들인다.
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit : '50mb'}));
 
 //라우터 적용
 app.use('/',router);
