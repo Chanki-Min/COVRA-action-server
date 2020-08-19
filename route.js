@@ -31,9 +31,40 @@ router.post("/ifttt/v1/test/setup", (req, res) => {
     //임의 data object를 보낸다
     data: {
       samples: {
-        actionRecordSkipping: {
-          upload_gisaid_data_to_ksb: { invalid: "true" },
-        },
+        actions : {
+          upload_gisaid_data_to_ksb : {
+            value1 : [
+              {
+                "strain": "USA/FL-BPHL-0772/2020",
+                "virus": "ncov",
+                "gisaid_epi_isl": "EPI_ISL_512677",
+                "genbank_accession": "?",
+                "date": "2020-06-29",
+                "region": "North America",
+                "country": "USA",
+                "division": "Florida",
+                "location": "",
+                "region_exposure": "North America",
+                "country_exposure": "USA",
+                "division_exposure": "Florida",
+                "segment": "genome",
+                "length": "29513",
+                "host": "Human",
+                "age": "?",
+                "sex": "?",
+                "pangolin_lineage": "B.1.1",
+                "GISAID_clade": "G",
+                "originating_lab": "Florida Bureau of Public Health Laboratories",
+                "submitting_lab": "Florida Bureau of Public Health Laboratories",
+                "authors": "Sarah Schmedes et al",
+                "url": "https://www.gisaid.org",
+                "title": "?",
+                "paper_url": "?",
+                "date_submitted": "2020-08-11"
+              }
+            ]
+          }
+        }
       },
     },
   });
@@ -42,11 +73,22 @@ router.post("/ifttt/v1/test/setup", (req, res) => {
 router.post("/ifttt/v1/actions/upload_gisaid_data_to_ksb", (req, res) => {
   console.log("got trigger");
 
-  console.log(`body : \n${JSON.stringify(req.body, undefined, 2)}`);
+  if(req.body.actionFields === undefined || req.body.actionFields.value1 === undefined) {
+    console.log('no data from request body');
+    res.status(400).send({
+      errors: [
+        {
+          "status": "SKIP",
+          message :  "Requst.body.vaule1 is undefined"
+        }
+      ]
+    });
+    return;
+  }
 
   const metaDataList = req.body.actionFields.value1;
 
-  console.log(`metaDataList = ${metaDataList}`)
+  console.log(`metaDataList type : ${typeof metaDataList} len = ${metaDataList.length}`)
 
   //TODO : 데이터를 KSB로 업로드하기
 
