@@ -3,10 +3,10 @@ const IFTTT_SERVICE_KEY = process.env.IFTTT_SERVICE_KEY;
 module.exports = {
     /**
      * req의 header에 있는 IFTTT service key가 일치하는지 검사하는 미들웨어 함수
-     * 
-     * @param {*} req 
-     * @param {*} res 
-     * @param {*} next 
+     *
+     * @param {*} req
+     * @param {*} res
+     * @param {*} next
      */
     checkIftttServiceKey: function (req, res, next) {
         if (req.get("IFTTT-Service-Key") !== IFTTT_SERVICE_KEY) {
