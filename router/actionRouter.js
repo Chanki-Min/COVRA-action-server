@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const middleware = require('../middleware/middleware');
+const middleware = require("../middleware/middleware");
 
 const IFTTT_GISAID_FIELD = process.env.IFTTT_ACTION_GISAID_FIELD_NAME;
 const IFTTT_WHO_FIELD = process.env.IFTTT_ACTION_WHO_FIELD_NAME;
 
 router.use(middleware.checkIftttServiceKey);
-
 
 router.post(
     "/ifttt/v1/actions/upload_gisaid_covid19_data_to_ksb",
