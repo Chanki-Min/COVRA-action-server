@@ -2,5 +2,9 @@ python/data/gisaid/*
 python/data/who/*
 python/processed_data/gisaid/*
 python/processed_data/who/*
+
+!python/data/**/tmp
+!python/processed_data/**/tmp
+
 python/__pycache__
 /node_modules
