@@ -1,11 +1,13 @@
 require("dotenv").config();
 
 const express = require("express");
+const compression = require('compression')
 const bodyParser = require("body-parser");
 const app = express();
 const actionRouter = require("./router/actionRouter");
 const boilerPlateRouter = require("./router/boilerPlateRouter");
 
+app.use(compression());
 //request의 body를 json으로 받아들인다.
 app.use(bodyParser.json({ limit: "50mb" }));
 
