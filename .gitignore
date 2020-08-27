@@ -8,3 +8,5 @@ python/processed_data/who/*
 
 python/__pycache__
 /node_modules
+
+.idea/
