@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 
 import json
+import sys 
 import os
 
 # 환경변수 받아서 적용
@@ -31,6 +32,16 @@ PATH_PROCESSED_DATA = ""
 # input output 이 동일한 형태임
 FILE_EXT = ".txt"
 INDENT_SPACE = 2
+
+
+def set_excution_place () :
+    
+    '''
+    '''
+
+    scriptAbsPath = os.path.abspath(__file__)
+    dirname = os.path.dirname(scriptAbsPath)
+    os.chdir(dirname)
 
 
 def set_data_orgin (data_origin) :
@@ -80,9 +91,9 @@ def is_file_exist () :
         if _.endswith(file_ext) :
             count += 1
 
-    if count is 1 :
+    if count == 1 :
         return True
-    elif count is 0 :
+    elif count == 0 :
         raise Exception("Error : There is no file. in {}" .format(file_path))
     else :
         raise Exception("Error : Too many file exist.")
@@ -162,7 +173,7 @@ def write_file (data) :
 
     parameter : list of dictionary
 
-    return : None
+    return : string
     '''
 
     indent_space = INDENT_SPACE
@@ -182,34 +193,37 @@ def write_file (data) :
             with open(path_tmp, "w", encoding = "utf-8") as f :
                 json.dump(data, f, indent = indent_space)
 
-            return
+            return file_name
         except : 
             trial_num -= 1
 
     raise Exception("Error : File write fail.")
 
 
-def main () :
+def main (origin) :
     
     '''
     main
 
-    parameter : None
+    parameter : string
 
-    return : None
+    return : string
     '''
 
-    for origin in LIST_ORIGIN :
+    # for origin in LIST_ORIGIN :
 
-        set_data_orgin(origin)
-        data = read_file()
-        processed_data = preprocess_data(data)
-        write_file(processed_data)
+    set_excution_place()
+    set_data_orgin(origin.upper())
+    data = read_file()
+    processed_data = preprocess_data(data)
+    file_name = write_file(processed_data)
+
+    return file_name
 
 
 if __name__ == "__main__" :
     try :
-        main()        
-        print("0")
+        file_name = main(sys.argv[1])        
+        print("0 {}" .format(file_name))
     except Exception as e :
         print("1", e)
