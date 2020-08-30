@@ -31,12 +31,16 @@ PATH_PROCESSED_DATA = ""
 # 파일 형식 
 # input output 이 동일한 형태임
 FILE_EXT = ".txt"
-INDENT_SPACE = 2
 
 
 def set_excution_place () :
     
     '''
+    현재 실행하는 directory 를 path/to/COVRA-ACTION-SERVER/python 으로 옮긴다.
+
+    parameter : None
+
+    return : None
     '''
 
     scriptAbsPath = os.path.abspath(__file__)
@@ -170,13 +174,12 @@ def write_file (data) :
 
     '''
     text extension으로 파일 저장
+    파일이름을 return 한다.
 
     parameter : list of dictionary
 
     return : string
     '''
-
-    indent_space = INDENT_SPACE
 
     # file 이름을 임시로 지정하기 위해 datetime 을 쓴다.
     current_time = datetime.today().strftime("%Y-%m-%d-%H-%M-%S")
@@ -191,7 +194,7 @@ def write_file (data) :
 
         try : 
             with open(path_tmp, "w", encoding = "utf-8") as f :
-                json.dump(data, f, indent = indent_space)
+                json.dump(data, f)
 
             return file_name
         except : 
@@ -203,14 +206,12 @@ def write_file (data) :
 def main (origin) :
     
     '''
-    main
+    main function, 파일 이름을 return 한다.
 
     parameter : string
 
     return : string
     '''
-
-    # for origin in LIST_ORIGIN :
 
     set_excution_place()
     set_data_orgin(origin.upper())
@@ -223,7 +224,10 @@ def main (origin) :
 
 if __name__ == "__main__" :
     try :
-        file_name = main(sys.argv[1])        
-        print("0 {}" .format(file_name))
+        if len(sys.argv) != 2 : 
+            raise Exception("Error : Number of Python argument is wrong.")
+
+        file_name = main(sys.argv[1])
+        print("0 {}" .format(file_name), end = '')
     except Exception as e :
         print("1", e)
