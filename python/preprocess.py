@@ -117,12 +117,6 @@ def Preprocess (data, origin) :
     return : list of dictionary
     '''
 
-    set_origin(origin)
-
-    dropped_data = drop_columns(data)
-    json_string_data = stringify_with_record_form(dropped_data)
-    parsed_data = parse_json_form(json_string_data)
-
     try : 
         
         set_origin(origin)
