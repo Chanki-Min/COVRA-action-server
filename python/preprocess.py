@@ -1,113 +1,95 @@
-from dotenv import load_dotenv
+import clade_statistics
+import who_statistics
+import gisaid_statistics
+
 import pandas as pd
 import numpy as np
 import json
 import os
 
-# 환경변수 받아서 적용
-# 문자열로 받기 때문에 공백문자에 주의 필요
-load_dotenv(verbose = True) # .env 없으면 에러 던짐
-LIST_DROPPED_COLUMNS_GISAID = os.environ.get("LIST_DROPPED_COLUMNS_GISAID").split(",")
-LIST_DROPPED_COLUMNS_WHO = os.environ.get("LIST_DROPPED_COLUMNS_WHO").split(",")
 
-ORIGIN = "" # 출처
-LIST_DROPPED_COLUMNS = ""
+PATH_GISAID = "gisaid.txt"
+PATH_WHO = "who.txt"
+
+df_gisaid = None
+df_who = None
 
 
-def set_origin(data_origin) :
+def test_stack () :
+    global df_gisaid
+    global df_who
+
+    df_gisaid = pd.read_json(PATH_GISAID)
+    df_who = pd.read_json(PATH_WHO)
+
+
+def make_json_data (cladePopulation, death, confirmed) :
+
+    json_data = {}
+
+    json_data["cladePopulation"] = cladePopulation
+    json_data["death"] = death
+    json_data["confirmed"] = confirmed
+
+    return json_data
+
+
+def casting_df_to_float () :
+    global df_gisaid
+    global df_who 
+
+    df_gisaid = df_gisaid.astype(float)
+    df_who = df_who.astype(float)
+
+
+def make_dummy_gisaid (who_end_scale) :
+    global df_gisaid
+
+    list_gisaid = list(np.array(df_gisaid))
+
+    start_scale = df_gisaid.iloc[len(df_gisaid) - 1]["Date"]
+    iteration_range = int(round((who_end_scale - start_scale) * 100))
+    for idx in range(iteration_range) :
+
+        list_tmp = []
+        scale = round(start_scale + (idx + 1) * 0.01, 2)
+        if df_gisaid.columns[0] == "Date" :
+            
+            list_tmp.append(scale)
+            list_tmp.extend([1., 1., 1., 1., 1., 1., 1.])
+
+        else :
+            
+            list_tmp = [1., 1., 1., 1., 1., 1., 1.]
+            list_tmp.append(scale)
+
+        list_gisaid.append(list_tmp)
+
+    df_gisaid = pd.DataFrame(list_gisaid, columns = df_gisaid.columns)
+
+
+def cut_who (gisaid_end_scale) :
+    global df_who
+
+    df_who = df_who[df_who["Date"] <= gisaid_end_scale]
+
+
+def make_global_dataset () :
     
-    '''
-    데이터 출처를 전역변수로 선언
+    who_end_scale = df_who.iloc[len(df_who) - 1]["Date"]
+    gisaid_end_scale = df_gisaid.iloc[len(df_gisaid) - 1]["Date"]
 
-    parameter : string
+    if who_end_scale > gisaid_end_scale :
+        cut_who(gisaid_end_scale)
+    elif who_end_scale < gisaid_end_scale :
+        make_dummy_gisaid(who_end_scale)
 
-    return : None
-    '''
-
-    global ORIGIN
-    ORIGIN = data_origin
-
-
-def set_list_dropped_columns () :
-
-    '''
-    LIST_DROPPED_COLUMNS 를 출처에 따라서 할당
-
-    parameter : None
-
-    return : None
-    '''
-
-    global LIST_DROPPED_COLUMNS
-    if ORIGIN == "GISAID" :
-
-        LIST_DROPPED_COLUMNS = LIST_DROPPED_COLUMNS_GISAID
-
-    elif ORIGIN == "WHO" :
-
-        LIST_DROPPED_COLUMNS = LIST_DROPPED_COLUMNS_WHO
-
-    else :
-        raise Exception("Error : Data origin is undefined.")
-
-
-
-def drop_columns (data) :
-    
-    '''
-    DataFrame 에서 column 을 drop 한다.
-
-    parameter : pandas.DataFrame
-
-    return : pandas.DataFrame
-    '''
-
-    if type(data) is pd.DataFrame :
-
-        set_list_dropped_columns()
-        list_dropped_columns = LIST_DROPPED_COLUMNS
-        dropped_data = data.drop(list_dropped_columns, axis = 1)
-
-        return dropped_data
-
-    else : 
-
-        raise Exception("Error : Need data type as pandas.DataFrame")
-
-
-def stringify_with_record_form (data) :
-    
-    '''
-    DataFrame 을 json 형식처럼 보이는 string data 로 변환한다.
-
-    parameter : pandas.DataFrame
-
-    return : string
-    '''
-    
-    # orient  = "records" 부분은 일반 Dictionary 나열 string 에서 list 요소를 wrapping 해준다.
-    json_string_data = data.to_json(orient = "records") 
-
-    return json_string_data
-
-
-def parse_json_form (data) :
-    
-    '''
-    string data를 json 모듈을 이용해서 parsing 한다.
-
-    parameter : string
-
-    return : list of dictionary
-    '''
-
-    parsed_data = json.loads(data)
-
-    return parsed_data
+    data = df_gisaid.join(df_who.drop(["Date"], axis = 1))
+    return data
 
 
 # main preprocess
-def Preprocess (data, origin) : 
+def Preprocess (df_gisaid_tmp, df_who_tmp) :
 
     '''
     main preprocess code
@@ -117,15 +99,21 @@ def Preprocess (data, origin) :
     return : list of dictionary
     '''
 
+    global df_gisaid
+    global df_who
+
     try : 
-        
-        set_origin(origin)
 
-        dropped_data = drop_columns(data)
-        json_string_data = stringify_with_record_form(dropped_data)
-        parsed_data = parse_json_form(json_string_data)
+        cladePopulation = clade_statistics.main(df_gisaid_tmp, df_who_tmp)
+        df_who, death, confirmed = who_statistics.main(df_gisaid_tmp, df_who_tmp)
+        df_gisaid = gisaid_statistics.main(df_gisaid_tmp, df_who_tmp)
 
-        return parsed_data
+        json_data = make_json_data(cladePopulation, death, confirmed)
+
+        casting_df_to_float()
+        learning_data = make_global_dataset()
+
+        return (json_data, learning_data)
 
     except : 
         raise Exception("Error : Preprocess failed.")
@@ -133,5 +121,7 @@ def Preprocess (data, origin) :
 
 # main function
 if __name__ == "__main__" :
-
-    print("Error : Preprocess test is only module.")
+    
+    test_stack()
+    a, b = Preprocess(df_gisaid, df_who)
+    print(b)
