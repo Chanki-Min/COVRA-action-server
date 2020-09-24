@@ -5,6 +5,7 @@ const compression = require('compression')
 const bodyParser = require("body-parser");
 const app = express();
 
+const middleware = require("./middleware/middleware");
 const actionRouter = require("./router/actionRouter");
 const boilerPlateRouter = require("./router/boilerPlateRouter");
 const ksbRequestHandleRouter = require("./router/ksbRequestHandleRouter");
@@ -12,6 +13,7 @@ const ksbRequestHandleRouter = require("./router/ksbRequestHandleRouter");
 app.use(compression());
 //request의 body를 json으로 받아들인다.
 app.use(bodyParser.json({ limit: "50mb" }));
+app.use('/ifttt/*', middleware.checkIftttServiceKey);
 
 //라우터 적용
 app.use("/", actionRouter);

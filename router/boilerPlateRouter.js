@@ -5,8 +5,6 @@ const middleware = require("../middleware/middleware");
 const IFTTT_GISAID_FIELD = process.env.IFTTT_ACTION_GISAID_FIELD_NAME;
 const IFTTT_WHO_FIELD = process.env.IFTTT_ACTION_WHO_FIELD_NAME;
 
-router.use(middleware.checkIftttServiceKey);
-
 //상태 조회
 router.get("/ifttt/v1/status", (req, res) => {
     res.status(200).send();
