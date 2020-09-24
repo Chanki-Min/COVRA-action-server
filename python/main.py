@@ -48,7 +48,7 @@ def set_excution_place () :
     os.chdir(dirname)
 
 
-def set_data_orgin (data_origin) :
+def set_data_origin (data_origin) :
 
     '''
     전역변수 PATH_METADATA, PATH_PROCESSED_DATA 를 업데이트하는 function
@@ -155,7 +155,7 @@ def read_file () :
     raise Exception("Error : File read fail.")
 
 
-def preprocess_data (data) :
+def preprocess_data (df_gisaid, df_who) :
 
     '''
     data 전처리 
@@ -165,12 +165,12 @@ def preprocess_data (data) :
     return : list of dictionary
     '''
     
-    processed_data = Preprocess(data, origin = ORIGIN)
+    json_data, processed_data = Preprocess(df_gisaid, df_who)
 
-    return processed_data
+    return (json_data, processed_data)
 
 
-def write_file (data) :
+def write_file (data, file_name = None) :
 
     '''
     text extension으로 파일 저장
@@ -181,29 +181,35 @@ def write_file (data) :
     return : string
     '''
 
-    # file 이름을 임시로 지정하기 위해 datetime 을 쓴다.
-    current_time = datetime.today().strftime("%Y-%m-%d-%H-%M-%S")
-    file_name = current_time + FILE_EXT
+    file_name_tmp = None
+    if file_name == None : 
+        current_time = datetime.today().strftime("%Y-%m-%d-%H-%M-%S")
+        file_name_tmp = current_time + FILE_EXT
+    else :
+        file_name_tmp = file_name
 
     file_path = PATH_PROCESSED_DATA
-    path_tmp = os.path.join(file_path, file_name)
+    path_tmp = os.path.join(file_path, file_name_tmp)
 
     trial_num = 3
 
     while(trial_num) :
 
         try : 
-            with open(path_tmp, "w", encoding = "utf-8") as f :
-                json.dump(data, f)
-
-            return file_name
+            if type(data) == pd.DataFrame :
+                data.to_json(path_tmp)
+            else :
+                with open(path_tmp, "w", encoding = "utf-8") as f :
+                    json.dump(str(data), f)
+                
+            return
         except : 
             trial_num -= 1
 
     raise Exception("Error : File write fail.")
 
 
-def main (origin) :
+def main () :
     
     '''
     main function, 파일 이름을 return 한다.
@@ -213,21 +219,31 @@ def main (origin) :
     return : string
     '''
 
+    origin = None
     set_excution_place()
-    set_data_orgin(origin.upper())
-    data = read_file()
-    processed_data = preprocess_data(data)
-    file_name = write_file(processed_data)
+    
+    origin = "GISAID"
+    set_data_origin(origin.upper())
+    df_gisaid = read_file()
 
-    return file_name
+    origin = "WHO"
+    set_data_origin(origin.upper())
+    df_who = read_file()
+
+    json_data, processed_data = preprocess_data(df_gisaid, df_who)
+    
+    origin = "GISAID"
+    set_data_origin(origin.upper())
+    write_file(processed_data, "processed_data.txt")
+
+    origin = "WHO"
+    set_data_origin(origin.upper())
+    write_file(json_data, "json_data.json")
 
 
 if __name__ == "__main__" :
     try :
-        if len(sys.argv) != 2 : 
-            raise Exception("Error : Number of Python argument is wrong.")
-
-        file_name = main(sys.argv[1])
-        print("0 {}" .format(file_name), end = '')
+        main()
+        print("0")
     except Exception as e :
         print("1", e)
