@@ -24,8 +24,8 @@ router.post(
         
         const gisaidSavePath = path.resolve('python', 'data', 'gisaid');
         const whoSavePath = path.resolve('python', 'data', 'who');
-        const gisaidProcessedPath = path.resolve('python', 'processed_data', 'gisaid');
-        const whoProcessedPath = path.resolve('python', 'processed_data', 'who');
+        //const gisaidProcessedPath = path.resolve('python', 'processed_data', 'gisaid');
+        //const whoProcessedPath = path.resolve('python', 'processed_data', 'who');
         const scriptPath = path.resolve('python', 'main.py');
 
         await clearDir(gisaidSavePath);
@@ -35,25 +35,14 @@ router.post(
         const whoDownload = downloadByStream(whoURL, path.join(whoSavePath, `WHO_DATA_${new Date().getTime()}.txt`));   
         await Promise.all([gisaidDownload, whoDownload]);
         
-        const gisaidProcess = execPromise(`python3 ${scriptPath} gisaid`);
-        const whoProcess = execPromise(`python3 ${scriptPath} who`);
-        await Promise.all([gisaidProcess, whoProcess]);
+        const scriptProcess = execPromise(`python3 ${scriptPath}`);
 
-        const gisaidResult = (await gisaidProcess).stdout;
-        const whoResult = (await whoProcess).stdout;
+        const processResult = (await scriptProcess).stdout;
 
-        if(gisaidResult.startsWith('0')) {
-            const resultFile = gisaidResult.slice(2);
-            await clearDir(gisaidProcessedPath, [resultFile]);
+        if(processResult.startsWith('0')) {
+            console.log('preprocess complete');
         } else {
-            console.error(`preprocess script error : ${gisaidResult}`)
-        }
-
-        if(whoResult.startsWith('0')) {
-            const resultFile = whoResult.slice(2);
-            await clearDir(whoProcessedPath, [resultFile]);
-        } else {
-            console.error(`preprocess script error : ${whoResult}`)
+            console.error(`preprocess script error : ${processResult}`)
         }
 
         res.set(200).send({
