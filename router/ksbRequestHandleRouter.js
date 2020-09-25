@@ -26,7 +26,7 @@ router.get(
 const getLatestProcessedDataPath = async (subject) => {
     const dataDirPath = path.resolve('python', 'processed_data', subject);
     const fileList = await fs.promises.readdir(dataDirPath);
-    return path.join(dataDirPath, fileList.filter(s => path.extname(s) == '.txt')
+    return path.join(dataDirPath, fileList.filter(s => (path.extname(s) == '.txt') || (path.extname(s) == '.json'))
         .sort((a,b) => b-a)[0]);    
 }
 
