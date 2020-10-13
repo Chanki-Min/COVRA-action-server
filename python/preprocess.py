@@ -68,10 +68,10 @@ def make_dummy_gisaid (who_end_scale) :
     df_gisaid = pd.DataFrame(list_gisaid, columns = df_gisaid.columns)
 
 
-def cut_who (gisaid_end_scale) :
-    global df_who
+def cut_gisaid (who_end_scale) :
+    global df_gisaid
 
-    df_who = df_who[df_who["Date"] <= gisaid_end_scale]
+    df_gisaid = df_gisaid[df_gisaid["Date"] <= who_end_scale]
 
 
 def make_global_dataset () :
@@ -79,9 +79,9 @@ def make_global_dataset () :
     who_end_scale = df_who.iloc[len(df_who) - 1]["Date"]
     gisaid_end_scale = df_gisaid.iloc[len(df_gisaid) - 1]["Date"]
 
-    if who_end_scale > gisaid_end_scale :
-        cut_who(gisaid_end_scale)
-    elif who_end_scale < gisaid_end_scale :
+    if who_end_scale < gisaid_end_scale :
+        cut_gisaid(who_end_scale)
+    elif who_end_scale > gisaid_end_scale :
         make_dummy_gisaid(who_end_scale)
 
     data = df_gisaid.join(df_who.drop(["Date"], axis = 1))
